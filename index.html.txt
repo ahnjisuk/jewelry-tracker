@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💎 Jewelry Production Tracker</title>
     
-    <!-- React 및 ReactDOM 라이브러리 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel Standalone (JSX 변환용) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS 먼저 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts -->
@@ -20,7 +13,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- SEO Meta Tags for Netlify -->
+    <!-- React 라이브러리들을 순서대로 로드 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- SEO Meta Tags -->
     <meta name="description" content="Modern jewelry production tracking system for managing CAD, casting, filing, and finishing processes.">
     <meta name="keywords" content="jewelry, production, tracking, CAD, casting, manufacturing">
     <meta name="author" content="Jewelry Production Tracker">
@@ -231,9 +231,31 @@
             opacity: 0;
             pointer-events: none;
         }
+        
+        /* Fallback styles for when JavaScript is disabled */
+        .no-js-message {
+            display: none;
+            padding: 2rem;
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        /* Show message if JavaScript is disabled */
+        noscript .no-js-message {
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <!-- JavaScript 비활성화 시 메시지 -->
+    <noscript>
+        <div class="no-js-message">
+            <h2>JavaScript가 비활성화되어 있습니다</h2>
+            <p>이 앱을 사용하려면 JavaScript를 활성화해주세요.</p>
+        </div>
+    </noscript>
+
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
         <div class="text-center">
@@ -242,466 +264,489 @@
         </div>
     </div>
 
-    <div id="root"></div>
+    <div id="root">
+        <!-- Fallback content if React doesn't load -->
+        <div style="padding: 2rem; text-align: center; color: white;">
+            <h1>jewelry-tracker</h1>
+            <p>Modern Jewelry Production Tracking System</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+                앱을 로딩 중입니다... 잠시만 기다려주세요.
+            </p>
+        </div>
+    </div>
 
     <script type="text/babel">
-        const { useState, useEffect, useCallback, useMemo } = React;
-
-        const JewelryProductionTracker = () => {
-            const processes = [
-                { id: 'cad', name: 'CAD\n캐드', icon: '🖥️', fullName: 'Computer-Aided Design' },
-                { id: 'wax_printing', name: 'Wax Printing\n왁스프린팅', icon: '🖨️', fullName: 'Wax 3D Printing' },
-                { id: 'casting', name: 'Casting\n캐스팅', icon: '🔥', fullName: 'Metal Casting' },
-                { id: 'filing', name: 'Filing\n파일링', icon: '🔧', fullName: 'Metal Filing' },
-                { id: 'stone_setting', name: 'Stone Setting\n스톤셋팅', icon: '💎', fullName: 'Gemstone Setting' },
-                { id: 'engraving', name: 'Engraving\n각인', icon: '✏️', fullName: 'Laser Engraving' },
-                { id: 'polishing', name: 'Polishing\n폴리싱', icon: '✨', fullName: 'Surface Polishing' },
-                { id: 'qc', name: 'QC\n품질검수', icon: '🔍', fullName: 'Quality Control' }
-            ];
+        console.log('Script starting...');
+        
+        // Check if React is loaded
+        if (typeof React === 'undefined') {
+            console.error('React is not loaded');
+            document.getElementById('root').innerHTML = `
+                <div style="padding: 2rem; text-align: center; color: white;">
+                    <h1>❌ 로딩 오류</h1>
+                    <p>React 라이브러리를 불러올 수 없습니다.</p>
+                    <p>인터넷 연결을 확인하고 페이지를 새로고침해주세요.</p>
+                </div>
+            `;
+        } else {
+            console.log('React loaded successfully');
             
-            const initialProducts = [
-                { id: 'PROD001', name: 'JY-01E', category: 'earring', material: 'Silver 925', createdAt: new Date().toISOString() },
-                { id: 'PROD002', name: 'JY-02E', category: 'earring', material: '14K Gold', createdAt: new Date().toISOString() },
-                { id: 'PROD003', name: 'JY-03E', category: 'earring', material: 'Platinum', createdAt: new Date().toISOString() },
-                { id: 'PROD004', name: 'JY-01N', category: 'necklace', material: '18K Gold', createdAt: new Date().toISOString() },
-                { id: 'PROD005', name: 'JY-02N', category: 'necklace', material: 'Silver 925', createdAt: new Date().toISOString() }
-            ];
-            
-            const [products, setProducts] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('jewelry_products_v2');
-                    const parsed = saved ? JSON.parse(saved) : null;
-                    if (parsed && Array.isArray(parsed) && parsed.length > 0) {
-                        return parsed;
-                    }
-                } catch (error) {
-                    console.warn('Failed to load products from localStorage:', error);
-                }
-                return initialProducts;
-            });
-            
-            const [productionData, setProductionData] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('jewelry_production_data_v2');
-                    return saved ? JSON.parse(saved) : {};
-                } catch (error) {
-                    console.warn('Failed to load production data from localStorage:', error);
-                    return {};
-                }
-            });
-            
-            const [searchTerm, setSearchTerm] = useState('');
-            const [filterCategory, setFilterCategory] = useState('all');
-            const [showAddModal, setShowAddModal] = useState(false);
-            const [editingProduct, setEditingProduct] = useState(null);
-            const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-            const [notification, setNotification] = useState(null);
-            const [isLoading, setIsLoading] = useState(false);
-            const [autoSaveStatus, setAutoSaveStatus] = useState('saved');
-            const [lastSaved, setLastSaved] = useState(new Date());
-            const [formData, setFormData] = useState({ name: '', category: 'earring', material: '' });
+            const { useState, useEffect, useCallback, useMemo } = React;
 
-            // Hide loading screen after component mounts
-            useEffect(() => {
-                const timer = setTimeout(() => {
-                    const loadingScreen = document.getElementById('loading-screen');
-                    if (loadingScreen) {
-                        loadingScreen.classList.add('hidden');
-                    }
-                }, 1000);
-                return () => clearTimeout(timer);
-            }, []);
-
-            const showNotification = useCallback((message, type = 'success') => {
-                setNotification({ message, type, id: Date.now() });
-                setTimeout(() => setNotification(null), 4000);
-            }, []);
-
-            useEffect(() => {
-                const timeoutId = setTimeout(() => {
-                    if (products.length > 0) {
-                        try {
-                            setAutoSaveStatus('saving');
-                            localStorage.setItem('jewelry_products_v2', JSON.stringify(products));
-                            localStorage.setItem('jewelry_production_data_v2', JSON.stringify(productionData));
-                            setLastSaved(new Date());
-                            setAutoSaveStatus('saved');
-                        } catch (error) {
-                            setAutoSaveStatus('error');
+            const JewelryProductionTracker = () => {
+                console.log('JewelryProductionTracker component rendering...');
+                
+                const processes = [
+                    { id: 'cad', name: 'CAD\n캐드', icon: '🖥️', fullName: 'Computer-Aided Design' },
+                    { id: 'wax_printing', name: 'Wax Printing\n왁스프린팅', icon: '🖨️', fullName: 'Wax 3D Printing' },
+                    { id: 'casting', name: 'Casting\n캐스팅', icon: '🔥', fullName: 'Metal Casting' },
+                    { id: 'filing', name: 'Filing\n파일링', icon: '🔧', fullName: 'Metal Filing' },
+                    { id: 'stone_setting', name: 'Stone Setting\n스톤셋팅', icon: '💎', fullName: 'Gemstone Setting' },
+                    { id: 'engraving', name: 'Engraving\n각인', icon: '✏️', fullName: 'Laser Engraving' },
+                    { id: 'polishing', name: 'Polishing\n폴리싱', icon: '✨', fullName: 'Surface Polishing' },
+                    { id: 'qc', name: 'QC\n품질검수', icon: '🔍', fullName: 'Quality Control' }
+                ];
+                
+                const initialProducts = [
+                    { id: 'PROD001', name: 'JY-01E', category: 'earring', material: 'Silver 925', createdAt: new Date().toISOString() },
+                    { id: 'PROD002', name: 'JY-02E', category: 'earring', material: '14K Gold', createdAt: new Date().toISOString() },
+                    { id: 'PROD003', name: 'JY-03E', category: 'earring', material: 'Platinum', createdAt: new Date().toISOString() },
+                    { id: 'PROD004', name: 'JY-01N', category: 'necklace', material: '18K Gold', createdAt: new Date().toISOString() },
+                    { id: 'PROD005', name: 'JY-02N', category: 'necklace', material: 'Silver 925', createdAt: new Date().toISOString() }
+                ];
+                
+                const [products, setProducts] = useState(() => {
+                    try {
+                        const saved = localStorage.getItem('jewelry_products_v2');
+                        const parsed = saved ? JSON.parse(saved) : null;
+                        if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+                            return parsed;
                         }
+                    } catch (error) {
+                        console.warn('Failed to load products from localStorage:', error);
                     }
-                }, 1000);
-                return () => clearTimeout(timeoutId);
-            }, [products, productionData]);
-
-            const calculateProgress = useCallback((productId) => {
-                const data = productionData[productId];
-                if (!data) return 0;
-                const completedCount = processes.reduce((count, process) => {
-                    return data.processes?.[process.id]?.completed ? count + 1 : count;
-                }, 0);
-                return Math.round((completedCount / processes.length) * 100);
-            }, [productionData, processes]);
-
-            const filteredProducts = useMemo(() => {
-                return products.filter(product => {
-                    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                         product.id.toLowerCase().includes(searchTerm.toLowerCase());
-                    const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-                    return matchesSearch && matchesCategory;
+                    return initialProducts;
                 });
-            }, [products, searchTerm, filterCategory]);
+                
+                const [productionData, setProductionData] = useState(() => {
+                    try {
+                        const saved = localStorage.getItem('jewelry_production_data_v2');
+                        return saved ? JSON.parse(saved) : {};
+                    } catch (error) {
+                        console.warn('Failed to load production data from localStorage:', error);
+                        return {};
+                    }
+                });
+                
+                const [searchTerm, setSearchTerm] = useState('');
+                const [filterCategory, setFilterCategory] = useState('all');
+                const [showAddModal, setShowAddModal] = useState(false);
+                const [editingProduct, setEditingProduct] = useState(null);
+                const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+                const [notification, setNotification] = useState(null);
+                const [isLoading, setIsLoading] = useState(false);
+                const [autoSaveStatus, setAutoSaveStatus] = useState('saved');
+                const [lastSaved, setLastSaved] = useState(new Date());
+                const [formData, setFormData] = useState({ name: '', category: 'earring', material: '' });
 
-            const categories = useMemo(() => {
-                return ['all', ...new Set(products.map(p => p.category))];
-            }, [products]);
+                // Hide loading screen after component mounts
+                useEffect(() => {
+                    console.log('Component mounted, hiding loading screen...');
+                    const timer = setTimeout(() => {
+                        const loadingScreen = document.getElementById('loading-screen');
+                        if (loadingScreen) {
+                            loadingScreen.classList.add('hidden');
+                        }
+                    }, 1000);
+                    return () => clearTimeout(timer);
+                }, []);
 
-            const statistics = useMemo(() => {
-                const totalProducts = products.length;
-                const completedProducts = products.filter(p => calculateProgress(p.id) === 100).length;
-                const inProgressProducts = totalProducts - completedProducts;
-                const averageProgress = totalProducts > 0 ? Math.round(products.reduce((sum, p) => sum + calculateProgress(p.id), 0) / totalProducts) : 0;
-                return { totalProducts, completedProducts, inProgressProducts, averageProgress };
-            }, [products, calculateProgress]);
+                const showNotification = useCallback((message, type = 'success') => {
+                    setNotification({ message, type, id: Date.now() });
+                    setTimeout(() => setNotification(null), 4000);
+                }, []);
 
-            const updateProcessStatus = useCallback((productId, processId, field, value) => {
-                setProductionData(prev => ({
-                    ...prev,
-                    [productId]: {
-                        ...prev[productId],
-                        processes: {
-                            ...prev[productId]?.processes,
-                            [processId]: {
-                                ...prev[productId]?.processes?.[processId],
-                                [field]: value,
-                                lastUpdated: new Date().toISOString()
+                useEffect(() => {
+                    const timeoutId = setTimeout(() => {
+                        if (products.length > 0) {
+                            try {
+                                setAutoSaveStatus('saving');
+                                localStorage.setItem('jewelry_products_v2', JSON.stringify(products));
+                                localStorage.setItem('jewelry_production_data_v2', JSON.stringify(productionData));
+                                setLastSaved(new Date());
+                                setAutoSaveStatus('saved');
+                            } catch (error) {
+                                setAutoSaveStatus('error');
                             }
                         }
+                    }, 1000);
+                    return () => clearTimeout(timeoutId);
+                }, [products, productionData]);
+
+                const calculateProgress = useCallback((productId) => {
+                    const data = productionData[productId];
+                    if (!data) return 0;
+                    const completedCount = processes.reduce((count, process) => {
+                        return data.processes?.[process.id]?.completed ? count + 1 : count;
+                    }, 0);
+                    return Math.round((completedCount / processes.length) * 100);
+                }, [productionData, processes]);
+
+                const filteredProducts = useMemo(() => {
+                    return products.filter(product => {
+                        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                             product.id.toLowerCase().includes(searchTerm.toLowerCase());
+                        const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
+                        return matchesSearch && matchesCategory;
+                    });
+                }, [products, searchTerm, filterCategory]);
+
+                const categories = useMemo(() => {
+                    return ['all', ...new Set(products.map(p => p.category))];
+                }, [products]);
+
+                const statistics = useMemo(() => {
+                    const totalProducts = products.length;
+                    const completedProducts = products.filter(p => calculateProgress(p.id) === 100).length;
+                    const inProgressProducts = totalProducts - completedProducts;
+                    const averageProgress = totalProducts > 0 ? Math.round(products.reduce((sum, p) => sum + calculateProgress(p.id), 0) / totalProducts) : 0;
+                    return { totalProducts, completedProducts, inProgressProducts, averageProgress };
+                }, [products, calculateProgress]);
+
+                const updateProcessStatus = useCallback((productId, processId, field, value) => {
+                    setProductionData(prev => ({
+                        ...prev,
+                        [productId]: {
+                            ...prev[productId],
+                            processes: {
+                                ...prev[productId]?.processes,
+                                [processId]: {
+                                    ...prev[productId]?.processes?.[processId],
+                                    [field]: value,
+                                    lastUpdated: new Date().toISOString()
+                                }
+                            }
+                        }
+                    }));
+                    if (field === 'completed' && value) {
+                        const processName = processes.find(p => p.id === processId)?.fullName || processId;
+                        showNotification(`✅ ${processName} completed!`);
                     }
-                }));
-                if (field === 'completed' && value) {
-                    const processName = processes.find(p => p.id === processId)?.fullName || processId;
-                    showNotification(`✅ ${processName} completed!`);
-                }
-            }, [processes, showNotification]);
+                }, [processes, showNotification]);
 
-            const addNewProduct = useCallback(() => {
-                if (!formData.name.trim()) return;
-                const newProduct = {
-                    id: `PROD${String(Date.now()).slice(-5)}`,
-                    name: formData.name.trim(),
-                    category: formData.category,
-                    material: formData.material.trim() || 'Unknown',
-                    createdAt: new Date().toISOString()
+                const addNewProduct = useCallback(() => {
+                    if (!formData.name.trim()) return;
+                    const newProduct = {
+                        id: `PROD${String(Date.now()).slice(-5)}`,
+                        name: formData.name.trim(),
+                        category: formData.category,
+                        material: formData.material.trim() || 'Unknown',
+                        createdAt: new Date().toISOString()
+                    };
+                    setProducts(prev => [...prev, newProduct]);
+                    setFormData({ name: '', category: 'earring', material: '' });
+                    setShowAddModal(false);
+                    showNotification(`🎉 Product "${newProduct.name}" added!`);
+                }, [formData, showNotification]);
+
+                const updateProduct = useCallback(() => {
+                    if (!formData.name.trim()) return;
+                    setProducts(prev => prev.map(p => 
+                        p.id === editingProduct ? { ...p, name: formData.name.trim(), category: formData.category, material: formData.material.trim() || 'Unknown' } : p
+                    ));
+                    setFormData({ name: '', category: 'earring', material: '' });
+                    setShowAddModal(false);
+                    setEditingProduct(null);
+                    showNotification('✅ Product updated!');
+                }, [formData, editingProduct, showNotification]);
+
+                const executeDeleteProduct = useCallback((productId) => {
+                    const product = products.find(p => p.id === productId);
+                    setProducts(prev => prev.filter(p => p.id !== productId));
+                    setProductionData(prev => {
+                        const newData = { ...prev };
+                        delete newData[productId];
+                        return newData;
+                    });
+                    setShowDeleteConfirm(null);
+                    showNotification(`🗑️ Product "${product?.name}" deleted.`);
+                }, [products, showNotification]);
+
+                const getProgressColor = (progress) => {
+                    if (progress === 100) return '#10b981';
+                    if (progress > 50) return '#fbbf24';
+                    if (progress > 0) return '#f87171';
+                    return '#e2e8f0';
                 };
-                setProducts(prev => [...prev, newProduct]);
-                setFormData({ name: '', category: 'earring', material: '' });
-                setShowAddModal(false);
-                showNotification(`🎉 Product "${newProduct.name}" added!`);
-            }, [formData, showNotification]);
-
-            const updateProduct = useCallback(() => {
-                if (!formData.name.trim()) return;
-                setProducts(prev => prev.map(p => 
-                    p.id === editingProduct ? { ...p, name: formData.name.trim(), category: formData.category, material: formData.material.trim() || 'Unknown' } : p
-                ));
-                setFormData({ name: '', category: 'earring', material: '' });
-                setShowAddModal(false);
-                setEditingProduct(null);
-                showNotification('✅ Product updated!');
-            }, [formData, editingProduct, showNotification]);
-
-            const executeDeleteProduct = useCallback((productId) => {
-                const product = products.find(p => p.id === productId);
-                setProducts(prev => prev.filter(p => p.id !== productId));
-                setProductionData(prev => {
-                    const newData = { ...prev };
-                    delete newData[productId];
-                    return newData;
-                });
-                setShowDeleteConfirm(null);
-                showNotification(`🗑️ Product "${product?.name}" deleted.`);
-            }, [products, showNotification]);
-
-            const getProgressColor = (progress) => {
-                if (progress === 100) return '#10b981';
-                if (progress > 50) return '#fbbf24';
-                if (progress > 0) return '#f87171';
-                return '#e2e8f0';
-            };
-            
-            return (
-                <div className="min-h-screen p-4 fade-in">
-                    <div className="max-w-7xl mx-auto">
-                        {notification && (
-                            <div className={`notification fixed top-6 right-6 z-50 p-4 rounded-2xl shadow-2xl max-w-md ${notification.type === 'error' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 text-white'}`}>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-2xl">{notification.type === 'error' ? '⚠️' : '✅'}</span>
-                                    <p>{notification.message}</p>
-                                </div>
-                            </div>
-                        )}
+                
+                console.log('Rendering JSX...');
+                
+                return React.createElement('div', { className: "min-h-screen p-4 fade-in" },
+                    React.createElement('div', { className: "max-w-7xl mx-auto" },
+                        notification && React.createElement('div', { 
+                            className: `notification fixed top-6 right-6 z-50 p-4 rounded-2xl shadow-2xl max-w-md ${notification.type === 'error' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 text-white'}` 
+                        },
+                            React.createElement('div', { className: "flex items-center gap-3" },
+                                React.createElement('span', { className: "text-2xl" }, notification.type === 'error' ? '⚠️' : '✅'),
+                                React.createElement('p', {}, notification.message)
+                            )
+                        ),
                         
-                        <div className="glass-card-strong rounded-3xl p-8 mb-8">
-                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-2xl micro-bounce">💎</div>
-                                    <div>
-                                        <h1 className="text-4xl font-bold text-white mb-2 gradient-text">Jewelry Production Tracker</h1>
-                                        <p className="text-white/80 text-lg">Modern Production Management System</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-2xl">🔍</span>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Search..." 
-                                            value={searchTerm} 
-                                            onChange={(e) => setSearchTerm(e.target.value)} 
-                                            className="modern-input pl-12 pr-4 py-3 rounded-xl" 
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-2xl">📂</span>
-                                        <select 
-                                            value={filterCategory} 
-                                            onChange={(e) => setFilterCategory(e.target.value)} 
-                                            className="modern-input pl-12 pr-10 py-3 rounded-xl appearance-none"
-                                        >
-                                            {categories.map(cat => 
-                                                <option key={cat} value={cat}>
-                                                    {cat === 'all' ? 'All Categories' : cat}
-                                                </option>
-                                            )}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        React.createElement('div', { className: "glass-card-strong rounded-3xl p-8 mb-8" },
+                            React.createElement('div', { className: "flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6" },
+                                React.createElement('div', { className: "flex items-center gap-4" },
+                                    React.createElement('div', { className: "w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-2xl micro-bounce" }, '💎'),
+                                    React.createElement('div', {},
+                                        React.createElement('h1', { className: "text-4xl font-bold text-white mb-2 gradient-text" }, 'Jewelry Production Tracker'),
+                                        React.createElement('p', { className: "text-white/80 text-lg" }, 'Modern Production Management System')
+                                    )
+                                ),
+                                React.createElement('div', { className: "flex items-center gap-3" },
+                                    React.createElement('div', { className: "relative" },
+                                        React.createElement('span', { className: "absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-2xl" }, '🔍'),
+                                        React.createElement('input', { 
+                                            type: "text", 
+                                            placeholder: "Search...", 
+                                            value: searchTerm, 
+                                            onChange: (e) => setSearchTerm(e.target.value), 
+                                            className: "modern-input pl-12 pr-4 py-3 rounded-xl" 
+                                        })
+                                    ),
+                                    React.createElement('div', { className: "relative" },
+                                        React.createElement('span', { className: "absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-2xl" }, '📂'),
+                                        React.createElement('select', { 
+                                            value: filterCategory, 
+                                            onChange: (e) => setFilterCategory(e.target.value), 
+                                            className: "modern-input pl-12 pr-10 py-3 rounded-xl appearance-none"
+                                        },
+                                            categories.map(cat => 
+                                                React.createElement('option', { key: cat, value: cat },
+                                                    cat === 'all' ? 'All Categories' : cat
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        ),
                         
-                        <div className="mb-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                            <div className="stat-card rounded-2xl p-6 scale-hover">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-white/80 font-medium">Total Products</p>
-                                    <span className="text-2xl text-white/50">👥</span>
-                                </div>
-                                <p className="text-3xl font-bold text-white">{statistics.totalProducts}</p>
-                            </div>
-                            <div className="stat-card rounded-2xl p-6 scale-hover">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-white/80 font-medium">Completed</p>
-                                    <span className="text-2xl text-white/50">✅</span>
-                                </div>
-                                <p className="text-3xl font-bold text-white">{statistics.completedProducts}</p>
-                            </div>
-                            <div className="stat-card rounded-2xl p-6 scale-hover">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-white/80 font-medium">In Progress</p>
-                                    <span className="text-2xl text-white/50">⏰</span>
-                                </div>
-                                <p className="text-3xl font-bold text-white">{statistics.inProgressProducts}</p>
-                            </div>
-                            <div className="stat-card rounded-2xl p-6 scale-hover">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-white/80 font-medium">Avg. Progress</p>
-                                    <span className="text-2xl text-white/50">📈</span>
-                                </div>
-                                <p className="text-3xl font-bold text-white">{`${statistics.averageProgress}%`}</p>
-                            </div>
-                        </div>
+                        React.createElement('div', { className: "mb-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6" },
+                            React.createElement('div', { className: "stat-card rounded-2xl p-6 scale-hover" },
+                                React.createElement('div', { className: "flex items-center justify-between mb-2" },
+                                    React.createElement('p', { className: "text-white/80 font-medium" }, 'Total Products'),
+                                    React.createElement('span', { className: "text-2xl text-white/50" }, '👥')
+                                ),
+                                React.createElement('p', { className: "text-3xl font-bold text-white" }, statistics.totalProducts)
+                            ),
+                            React.createElement('div', { className: "stat-card rounded-2xl p-6 scale-hover" },
+                                React.createElement('div', { className: "flex items-center justify-between mb-2" },
+                                    React.createElement('p', { className: "text-white/80 font-medium" }, 'Completed'),
+                                    React.createElement('span', { className: "text-2xl text-white/50" }, '✅')
+                                ),
+                                React.createElement('p', { className: "text-3xl font-bold text-white" }, statistics.completedProducts)
+                            ),
+                            React.createElement('div', { className: "stat-card rounded-2xl p-6 scale-hover" },
+                                React.createElement('div', { className: "flex items-center justify-between mb-2" },
+                                    React.createElement('p', { className: "text-white/80 font-medium" }, 'In Progress'),
+                                    React.createElement('span', { className: "text-2xl text-white/50" }, '⏰')
+                                ),
+                                React.createElement('p', { className: "text-3xl font-bold text-white" }, statistics.inProgressProducts)
+                            ),
+                            React.createElement('div', { className: "stat-card rounded-2xl p-6 scale-hover" },
+                                React.createElement('div', { className: "flex items-center justify-between mb-2" },
+                                    React.createElement('p', { className: "text-white/80 font-medium" }, 'Avg. Progress'),
+                                    React.createElement('span', { className: "text-2xl text-white/50" }, '📈')
+                                ),
+                                React.createElement('p', { className: "text-3xl font-bold text-white" }, `${statistics.averageProgress}%`)
+                            )
+                        ),
                         
-                        <div className="glass-card rounded-2xl overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-white">
-                                    <thead>
-                                        <tr className="bg-white/10">
-                                            <th className="p-4 text-left">Product</th>
-                                            <th className="p-4 text-left">Progress</th>
-                                            {processes.map(process => (
-                                                <th key={process.id} className="p-4 text-center">
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <span className="text-2xl">{process.icon}</span>
-                                                        <span className="text-xs whitespace-pre-line text-center">{process.name}</span>
-                                                    </div>
-                                                </th>
-                                            ))}
-                                            <th className="p-4">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredProducts.map(product => {
+                        React.createElement('div', { className: "glass-card rounded-2xl overflow-hidden" },
+                            React.createElement('div', { className: "overflow-x-auto" },
+                                React.createElement('table', { className: "w-full text-white" },
+                                    React.createElement('thead', {},
+                                        React.createElement('tr', { className: "bg-white/10" },
+                                            React.createElement('th', { className: "p-4 text-left" }, 'Product'),
+                                            React.createElement('th', { className: "p-4 text-left" }, 'Progress'),
+                                            ...processes.map(process => 
+                                                React.createElement('th', { key: process.id, className: "p-4 text-center" },
+                                                    React.createElement('div', { className: "flex flex-col items-center gap-1" },
+                                                        React.createElement('span', { className: "text-2xl" }, process.icon),
+                                                        React.createElement('span', { className: "text-xs whitespace-pre-line text-center" }, process.name)
+                                                    )
+                                                )
+                                            ),
+                                            React.createElement('th', { className: "p-4" }, 'Actions')
+                                        )
+                                    ),
+                                    React.createElement('tbody', {},
+                                        filteredProducts.map(product => {
                                             const progress = calculateProgress(product.id);
                                             const data = productionData[product.id];
-                                            return (
-                                                <tr key={product.id} className="border-b border-white/10 hover:bg-white/5">
-                                                    <td className="p-4">
-                                                        <div>
-                                                            <div className="font-bold">{product.name}</div>
-                                                            <div className="text-sm text-white/70">{product.material}</div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-full bg-white/10 rounded-full h-2.5">
-                                                                <div 
-                                                                    className="h-2.5 rounded-full" 
-                                                                    style={{ 
-                                                                        width: `${progress}%`, 
-                                                                        background: getProgressColor(progress) 
-                                                                    }}
-                                                                ></div>
-                                                            </div>
-                                                            <span className="font-medium">{`${progress}%`}</span>
-                                                        </div>
-                                                    </td>
-                                                    {processes.map(process => (
-                                                        <td key={process.id} className="p-4 text-center">
-                                                            <button 
-                                                                onClick={() => updateProcessStatus(product.id, process.id, 'completed', !data?.processes?.[process.id]?.completed)} 
-                                                                className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all ${
-                                                                    data?.processes?.[process.id]?.completed ? 'bg-green-500' : 'bg-white/20 hover:bg-white/30'
-                                                                }`}
-                                                            >
-                                                                <span className="text-2xl">
-                                                                    {data?.processes?.[process.id]?.completed ? '✅' : '⚪'}
-                                                                </span>
-                                                            </button>
-                                                        </td>
-                                                    ))}
-                                                    <td className="p-4">
-                                                        <div className="flex gap-2 justify-center">
-                                                            <button 
-                                                                onClick={() => { 
-                                                                    setEditingProduct(product.id); 
-                                                                    setFormData({ 
-                                                                        name: product.name, 
-                                                                        category: product.category, 
-                                                                        material: product.material 
-                                                                    }); 
-                                                                    setShowAddModal(true); 
-                                                                }} 
-                                                                className="p-2 rounded-full hover:bg-white/20"
-                                                            >
-                                                                <span className="text-2xl">✏️</span>
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => setShowDeleteConfirm(product.id)} 
-                                                                className="p-2 rounded-full hover:bg-white/20"
-                                                            >
-                                                                <span className="text-2xl">🗑️</span>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                            return React.createElement('tr', { key: product.id, className: "border-b border-white/10 hover:bg-white/5" },
+                                                React.createElement('td', { className: "p-4" },
+                                                    React.createElement('div', {},
+                                                        React.createElement('div', { className: "font-bold" }, product.name),
+                                                        React.createElement('div', { className: "text-sm text-white/70" }, product.material)
+                                                    )
+                                                ),
+                                                React.createElement('td', { className: "p-4" },
+                                                    React.createElement('div', { className: "flex items-center gap-3" },
+                                                        React.createElement('div', { className: "w-full bg-white/10 rounded-full h-2.5" },
+                                                            React.createElement('div', { 
+                                                                className: "h-2.5 rounded-full", 
+                                                                style: { 
+                                                                    width: `${progress}%`, 
+                                                                    background: getProgressColor(progress) 
+                                                                }
+                                                            })
+                                                        ),
+                                                        React.createElement('span', { className: "font-medium" }, `${progress}%`)
+                                                    )
+                                                ),
+                                                ...processes.map(process => 
+                                                    React.createElement('td', { key: process.id, className: "p-4 text-center" },
+                                                        React.createElement('button', { 
+                                                            onClick: () => updateProcessStatus(product.id, process.id, 'completed', !data?.processes?.[process.id]?.completed), 
+                                                            className: `w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all ${
+                                                                data?.processes?.[process.id]?.completed ? 'bg-green-500' : 'bg-white/20 hover:bg-white/30'
+                                                            }`
+                                                        },
+                                                            React.createElement('span', { className: "text-2xl" },
+                                                                data?.processes?.[process.id]?.completed ? '✅' : '⚪'
+                                                            )
+                                                        )
+                                                    )
+                                                ),
+                                                React.createElement('td', { className: "p-4" },
+                                                    React.createElement('div', { className: "flex gap-2 justify-center" },
+                                                        React.createElement('button', { 
+                                                            onClick: () => { 
+                                                                setEditingProduct(product.id); 
+                                                                setFormData({ 
+                                                                    name: product.name, 
+                                                                    category: product.category, 
+                                                                    material: product.material 
+                                                                }); 
+                                                                setShowAddModal(true); 
+                                                            }, 
+                                                            className: "p-2 rounded-full hover:bg-white/20"
+                                                        },
+                                                            React.createElement('span', { className: "text-2xl" }, '✏️')
+                                                        ),
+                                                        React.createElement('button', { 
+                                                            onClick: () => setShowDeleteConfirm(product.id), 
+                                                            className: "p-2 rounded-full hover:bg-white/20"
+                                                        },
+                                                            React.createElement('span', { className: "text-2xl" }, '🗑️')
+                                                        )
+                                                    )
+                                                )
                                             );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                                        })
+                                    )
+                                )
+                            )
+                        ),
                         
-                        {filteredProducts.length === 0 && (
-                            <div className="text-center py-12 text-white/80">
-                                No products found. Try adjusting your search or filter.
-                            </div>
-                        )}
+                        filteredProducts.length === 0 && React.createElement('div', { className: "text-center py-12 text-white/80" },
+                            'No products found. Try adjusting your search or filter.'
+                        ),
                         
-                        <button 
-                            onClick={() => { 
+                        React.createElement('button', { 
+                            onClick: () => { 
                                 setEditingProduct(null); 
                                 setFormData({ name: '', category: 'earring', material: '' }); 
                                 setShowAddModal(true); 
-                            }} 
-                            className="floating-button"
-                        >
-                            <span className="text-2xl text-white">➕</span>
-                        </button>
+                            }, 
+                            className: "floating-button"
+                        },
+                            React.createElement('span', { className: "text-2xl text-white" }, '➕')
+                        ),
                         
-                        {(showAddModal || showDeleteConfirm) && (
-                            <div className="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center z-50 p-4">
-                                {showAddModal && (
-                                    <div className="glass-card-strong rounded-2xl p-8 w-full max-w-md modal-content">
-                                        <h2 className="text-2xl font-bold text-white mb-6">
-                                            {editingProduct ? 'Edit Product' : 'Add New Product'}
-                                        </h2>
-                                        <div className="space-y-4">
-                                            <input 
-                                                type="text" 
-                                                placeholder="Product Name" 
-                                                value={formData.name} 
-                                                onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} 
-                                                className="modern-input w-full px-4 py-3 rounded-xl" 
-                                            />
-                                            <select 
-                                                value={formData.category} 
-                                                onChange={(e) => setFormData(p => ({ ...p, category: e.target.value }))} 
-                                                className="modern-input w-full px-4 py-3 rounded-xl"
-                                            >
-                                                <option value="earring">Earring</option>
-                                                <option value="necklace">Necklace</option>
-                                                <option value="bracelet">Bracelet</option>
-                                                <option value="ring">Ring</option>
-                                            </select>
-                                            <input 
-                                                type="text" 
-                                                placeholder="Material" 
-                                                value={formData.material} 
-                                                onChange={(e) => setFormData(p => ({ ...p, material: e.target.value }))} 
-                                                className="modern-input w-full px-4 py-3 rounded-xl" 
-                                            />
-                                        </div>
-                                        <div className="flex gap-4 mt-8">
-                                            <button 
-                                                onClick={() => setShowAddModal(false)} 
-                                                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button 
-                                                onClick={editingProduct ? updateProduct : addNewProduct} 
-                                                className="flex-1 gradient-button px-6 py-3 text-white rounded-xl font-medium"
-                                            >
-                                                {editingProduct ? 'Update' : 'Add'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {showDeleteConfirm && (
-                                    <div className="glass-card-strong rounded-2xl p-8 w-full max-w-md modal-content text-center">
-                                        <div className="w-16 h-16 bg-red-500/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                            <span className="text-2xl text-white">🗑️</span>
-                                        </div>
-                                        <h2 className="text-2xl font-bold text-white mb-4">Delete Product?</h2>
-                                        <p className="text-white/80">
-                                            {`Are you sure you want to delete "${products.find(p => p.id === showDeleteConfirm)?.name}"? This cannot be undone.`}
-                                        </p>
-                                        <div className="flex gap-4 mt-8">
-                                            <button 
-                                                onClick={() => setShowDeleteConfirm(null)} 
-                                                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button 
-                                                onClick={() => executeDeleteProduct(showDeleteConfirm)} 
-                                                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        };
+                        (showAddModal || showDeleteConfirm) && React.createElement('div', { className: "fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center z-50 p-4" },
+                            showAddModal && React.createElement('div', { className: "glass-card-strong rounded-2xl p-8 w-full max-w-md modal-content" },
+                                React.createElement('h2', { className: "text-2xl font-bold text-white mb-6" },
+                                    editingProduct ? 'Edit Product' : 'Add New Product'
+                                ),
+                                React.createElement('div', { className: "space-y-4" },
+                                    React.createElement('input', { 
+                                        type: "text", 
+                                        placeholder: "Product Name", 
+                                        value: formData.name, 
+                                        onChange: (e) => setFormData(p => ({ ...p, name: e.target.value })), 
+                                        className: "modern-input w-full px-4 py-3 rounded-xl" 
+                                    }),
+                                    React.createElement('select', { 
+                                        value: formData.category, 
+                                        onChange: (e) => setFormData(p => ({ ...p, category: e.target.value })), 
+                                        className: "modern-input w-full px-4 py-3 rounded-xl"
+                                    },
+                                        React.createElement('option', { value: "earring" }, 'Earring'),
+                                        React.createElement('option', { value: "necklace" }, 'Necklace'),
+                                        React.createElement('option', { value: "bracelet" }, 'Bracelet'),
+                                        React.createElement('option', { value: "ring" }, 'Ring')
+                                    ),
+                                    React.createElement('input', { 
+                                        type: "text", 
+                                        placeholder: "Material", 
+                                        value: formData.material, 
+                                        onChange: (e) => setFormData(p => ({ ...p, material: e.target.value })), 
+                                        className: "modern-input w-full px-4 py-3 rounded-xl" 
+                                    })
+                                ),
+                                React.createElement('div', { className: "flex gap-4 mt-8" },
+                                    React.createElement('button', { 
+                                        onClick: () => setShowAddModal(false), 
+                                        className: "flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium"
+                                    }, 'Cancel'),
+                                    React.createElement('button', { 
+                                        onClick: editingProduct ? updateProduct : addNewProduct, 
+                                        className: "flex-1 gradient-button px-6 py-3 text-white rounded-xl font-medium"
+                                    }, editingProduct ? 'Update' : 'Add')
+                                )
+                            ),
+                            
+                            showDeleteConfirm && React.createElement('div', { className: "glass-card-strong rounded-2xl p-8 w-full max-w-md modal-content text-center" },
+                                React.createElement('div', { className: "w-16 h-16 bg-red-500/50 rounded-full flex items-center justify-center mx-auto mb-6" },
+                                    React.createElement('span', { className: "text-2xl text-white" }, '🗑️')
+                                ),
+                                React.createElement('h2', { className: "text-2xl font-bold text-white mb-4" }, 'Delete Product?'),
+                                React.createElement('p', { className: "text-white/80" },
+                                    `Are you sure you want to delete "${products.find(p => p.id === showDeleteConfirm)?.name}"? This cannot be undone.`
+                                ),
+                                React.createElement('div', { className: "flex gap-4 mt-8" },
+                                    React.createElement('button', { 
+                                        onClick: () => setShowDeleteConfirm(null), 
+                                        className: "flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium"
+                                    }, 'Cancel'),
+                                    React.createElement('button', { 
+                                        onClick: () => executeDeleteProduct(showDeleteConfirm), 
+                                        className: "flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium"
+                                    }, 'Delete')
+                                )
+                            )
+                        )
+                    )
+                );
+            };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(React.createElement(JewelryProductionTracker));
+            console.log('About to render component...');
+            try {
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(React.createElement(JewelryProductionTracker));
+                console.log('Component rendered successfully!');
+            } catch (error) {
+                console.error('Error rendering component:', error);
+                document.getElementById('root').innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: white;">
+                        <h1>❌ 렌더링 오류</h1>
+                        <p>앱을 로드하는 중 오류가 발생했습니다.</p>
+                        <p>오류: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
     </script>
 </body>
 </html>
