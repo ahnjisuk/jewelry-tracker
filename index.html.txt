@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💎 Jewelry Production Tracker</title>
     
-    <!-- Tailwind CSS 먼저 로드 -->
+    <!-- React 라이브러리들 (안정적인 CDN) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts -->
@@ -13,277 +18,155 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- React 라이브러리들을 순서대로 로드 -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel Standalone -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Modern jewelry production tracking system for managing CAD, casting, filing, and finishing processes.">
-    <meta name="keywords" content="jewelry, production, tracking, CAD, casting, manufacturing">
-    <meta name="author" content="Jewelry Production Tracker">
-    
-    <!-- Open Graph for social sharing -->
-    <meta property="og:title" content="💎 Jewelry Production Tracker">
-    <meta property="og:description" content="Modern jewelry production tracking system">
-    <meta property="og:type" content="website">
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { 
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
-            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
-            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); 
-            --glass-bg: rgba(255, 255, 255, 0.1); 
-            --glass-border: rgba(255, 255, 255, 0.2); 
-            --shadow-soft: 0 8px 32px rgba(31, 38, 135, 0.37); 
-            --shadow-strong: 0 15px 35px rgba(31, 38, 135, 0.5); 
-            --backdrop-blur: blur(20px); 
-        }
         body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); 
             background-size: 400% 400%; 
             animation: gradientShift 15s ease infinite; 
             min-height: 100vh; 
-            overflow-x: hidden; 
+            color: white;
         }
         @keyframes gradientShift { 
             0% { background-position: 0% 50%; } 
             50% { background-position: 100% 50%; } 
             100% { background-position: 0% 50%; } 
         }
+        .container { max-width: 7xl; margin: 0 auto; padding: 1rem; }
         .glass-card { 
-            background: var(--glass-bg); 
-            backdrop-filter: var(--backdrop-blur); 
-            -webkit-backdrop-filter: var(--backdrop-blur); 
-            border: 1px solid var(--glass-border); 
-            box-shadow: var(--shadow-soft); 
-        }
-        .glass-card-strong { 
             background: rgba(255, 255, 255, 0.15); 
-            backdrop-filter: var(--backdrop-blur); 
-            -webkit-backdrop-filter: var(--backdrop-blur); 
+            backdrop-filter: blur(20px); 
             border: 1px solid rgba(255, 255, 255, 0.3); 
-            box-shadow: var(--shadow-strong); 
+            border-radius: 1.5rem; 
+            padding: 2rem; 
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 35px rgba(31, 38, 135, 0.5);
         }
         .gradient-button { 
-            background: var(--primary-gradient); 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
             border: none; 
-            position: relative; 
-            overflow: hidden; 
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease; 
-        }
-        .gradient-button::before { 
-            content: ''; 
-            position: absolute; 
-            top: 0; 
-            left: -100%; 
-            width: 100%; 
-            height: 100%; 
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); 
-            transition: left 0.5s; 
-        }
-        .gradient-button:hover::before { 
-            left: 100%; 
         }
         .gradient-button:hover { 
             transform: translateY(-2px); 
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4); 
         }
-        .progress-circle { 
-            transform: rotate(-90deg); 
-            filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3)); 
-        }
-        .micro-bounce { 
-            animation: microBounce 2s infinite; 
-        }
-        @keyframes microBounce { 
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 
-            40% { transform: translateY(-3px); } 
-            60% { transform: translateY(-1px); } 
-        }
-        .fade-in { 
-            animation: fadeIn 0.6s ease-out; 
-        }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-        .scale-hover { 
-            transition: transform 0.3s ease; 
-        }
-        .scale-hover:hover { 
-            transform: scale(1.05); 
-        }
-        .modern-input { 
+        .input { 
             background: rgba(255, 255, 255, 0.9); 
             border: 2px solid transparent; 
-            background-clip: padding-box; 
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
             transition: all 0.3s ease; 
+            width: 100%;
+            margin-bottom: 1rem;
         }
-        .modern-input:focus { 
+        .input:focus { 
             background: rgba(255, 255, 255, 1); 
             border-color: #667eea; 
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); 
             outline: none; 
         }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .table th { background: rgba(255,255,255,0.1); }
+        .process-btn { 
+            width: 2rem; height: 2rem; 
+            border-radius: 50%; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        .process-btn.completed { background: #10b981; }
+        .process-btn.incomplete { background: rgba(255,255,255,0.2); }
+        .process-btn:hover { transform: scale(1.1); }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
         .stat-card { 
-            background: var(--glass-bg); 
-            backdrop-filter: var(--backdrop-blur); 
-            border: 1px solid var(--glass-border); 
-            transition: all 0.3s ease; 
-            position: relative; 
-            overflow: hidden; 
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 1rem; 
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         .stat-card::before { 
             content: ''; 
             position: absolute; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
+            top: 0; left: 0; right: 0; 
             height: 3px; 
-            background: var(--primary-gradient); 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
         }
-        .stat-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2); 
-        }
-        .notification { 
-            backdrop-filter: blur(20px); 
-            animation: slideInRight 0.3s ease; 
-        }
-        @keyframes slideInRight { 
-            from { transform: translateX(100%); opacity: 0; } 
-            to { transform: translateX(0); opacity: 1; } 
-        }
-        .loading-spinner { 
-            width: 40px; 
-            height: 40px; 
-            border: 4px solid rgba(102, 126, 234, 0.1); 
-            border-left: 4px solid #667eea; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
-        }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        .modal-backdrop { 
-            backdrop-filter: blur(10px); 
-            animation: fadeIn 0.3s ease; 
+        .stat-card:hover { transform: translateY(-5px); }
+        .modal { 
+            position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
         }
         .modal-content { 
-            animation: modalSlideUp 0.3s ease; 
+            background: rgba(255, 255, 255, 0.15); 
+            backdrop-filter: blur(20px); 
+            border-radius: 1rem; 
+            padding: 2rem; 
+            max-width: 500px; 
+            width: 90%;
         }
-        @keyframes modalSlideUp { 
-            from { transform: translateY(50px); opacity: 0; } 
-            to { transform: translateY(0); opacity: 1; } 
-        }
-        .gradient-text { 
-            background: var(--primary-gradient); 
-            -webkit-background-clip: text; 
-            background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-        }
-        .floating-button { 
+        .floating-btn { 
             position: fixed; 
-            bottom: 2rem; 
-            right: 2rem; 
-            width: 60px; 
-            height: 60px; 
+            bottom: 2rem; right: 2rem; 
+            width: 60px; height: 60px; 
             border-radius: 50%; 
-            background: var(--primary-gradient); 
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            border: none; 
+            color: white; 
+            font-size: 1.5rem; 
             cursor: pointer; 
-            transition: all 0.3s ease; 
-            z-index: 1000; 
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 999;
         }
-        .floating-button:hover { 
-            transform: scale(1.1) rotate(90deg); 
-            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6); 
+        .floating-btn:hover { transform: scale(1.1); }
+        .notification { 
+            position: fixed; 
+            top: 1rem; right: 1rem; 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            color: white; 
+            padding: 1rem; 
+            border-radius: 0.75rem; 
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
         }
-        ::placeholder { 
-            color: #a0aec0; 
-        }
-        
-        /* Loading screen for better UX */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-        .loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        /* Fallback styles for when JavaScript is disabled */
-        .no-js-message {
-            display: none;
-            padding: 2rem;
-            text-align: center;
-            color: white;
-            font-size: 1.5rem;
-        }
-        
-        /* Show message if JavaScript is disabled */
-        noscript .no-js-message {
-            display: block;
+        @keyframes slideIn { 
+            from { transform: translateX(100%); opacity: 0; } 
+            to { transform: translateX(0); opacity: 1; } 
         }
     </style>
 </head>
 <body>
-    <!-- JavaScript 비활성화 시 메시지 -->
-    <noscript>
-        <div class="no-js-message">
-            <h2>JavaScript가 비활성화되어 있습니다</h2>
-            <p>이 앱을 사용하려면 JavaScript를 활성화해주세요.</p>
-        </div>
-    </noscript>
-
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="text-center">
-            <div class="loading-spinner mx-auto mb-4"></div>
-            <p class="text-white text-xl">Loading Jewelry Tracker...</p>
-        </div>
-    </div>
-
     <div id="root">
-        <!-- Fallback content if React doesn't load -->
-        <div style="padding: 2rem; text-align: center; color: white;">
-            <h1>jewelry-tracker</h1>
-            <p>Modern Jewelry Production Tracking System</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
-                앱을 로딩 중입니다... 잠시만 기다려주세요.
-            </p>
+        <div style="text-align: center; padding: 2rem;">
+            <h1 style="font-size: 2rem; margin-bottom: 1rem;">💎 Jewelry Production Tracker</h1>
+            <p>Loading React app...</p>
         </div>
     </div>
 
     <script type="text/babel">
-        console.log('Script starting...');
+        console.log('Script loading...');
         
-        // Check if React is loaded
+        // React 라이브러리 확인
         if (typeof React === 'undefined') {
-            console.error('React is not loaded');
+            console.error('React not loaded');
             document.getElementById('root').innerHTML = `
-                <div style="padding: 2rem; text-align: center; color: white;">
-                    <h1>❌ 로딩 오류</h1>
+                <div style="text-align: center; padding: 2rem; color: white;">
+                    <h1>❌ React 로딩 실패</h1>
                     <p>React 라이브러리를 불러올 수 없습니다.</p>
                     <p>인터넷 연결을 확인하고 페이지를 새로고침해주세요.</p>
                 </div>
@@ -293,459 +176,265 @@
             
             const { useState, useEffect, useCallback, useMemo } = React;
 
-            const JewelryProductionTracker = () => {
-                console.log('JewelryProductionTracker component rendering...');
-                
+            const JewelryTracker = () => {
                 const processes = [
-                    { id: 'cad', name: 'CAD\n캐드', icon: '🖥️', fullName: 'Computer-Aided Design' },
-                    { id: 'wax_printing', name: 'Wax Printing\n왁스프린팅', icon: '🖨️', fullName: 'Wax 3D Printing' },
-                    { id: 'casting', name: 'Casting\n캐스팅', icon: '🔥', fullName: 'Metal Casting' },
-                    { id: 'filing', name: 'Filing\n파일링', icon: '🔧', fullName: 'Metal Filing' },
-                    { id: 'stone_setting', name: 'Stone Setting\n스톤셋팅', icon: '💎', fullName: 'Gemstone Setting' },
-                    { id: 'engraving', name: 'Engraving\n각인', icon: '✏️', fullName: 'Laser Engraving' },
-                    { id: 'polishing', name: 'Polishing\n폴리싱', icon: '✨', fullName: 'Surface Polishing' },
-                    { id: 'qc', name: 'QC\n품질검수', icon: '🔍', fullName: 'Quality Control' }
+                    { id: 'cad', name: 'CAD', icon: '🖥️' },
+                    { id: 'wax', name: 'Wax', icon: '🖨️' },
+                    { id: 'casting', name: 'Casting', icon: '🔥' },
+                    { id: 'filing', name: 'Filing', icon: '🔧' },
+                    { id: 'stone', name: 'Stone', icon: '💎' },
+                    { id: 'engrave', name: 'Engrave', icon: '✏️' },
+                    { id: 'polish', name: 'Polish', icon: '✨' },
+                    { id: 'qc', name: 'QC', icon: '🔍' }
                 ];
                 
-                const initialProducts = [
-                    { id: 'PROD001', name: 'JY-01E', category: 'earring', material: 'Silver 925', createdAt: new Date().toISOString() },
-                    { id: 'PROD002', name: 'JY-02E', category: 'earring', material: '14K Gold', createdAt: new Date().toISOString() },
-                    { id: 'PROD003', name: 'JY-03E', category: 'earring', material: 'Platinum', createdAt: new Date().toISOString() },
-                    { id: 'PROD004', name: 'JY-01N', category: 'necklace', material: '18K Gold', createdAt: new Date().toISOString() },
-                    { id: 'PROD005', name: 'JY-02N', category: 'necklace', material: 'Silver 925', createdAt: new Date().toISOString() }
-                ];
+                const [products, setProducts] = useState([
+                    { id: 'P001', name: 'JY-01E', category: 'earring', material: 'Silver 925' },
+                    { id: 'P002', name: 'JY-02E', category: 'earring', material: '14K Gold' },
+                    { id: 'P003', name: 'JY-01N', category: 'necklace', material: '18K Gold' }
+                ]);
                 
-                const [products, setProducts] = useState(() => {
-                    try {
-                        const saved = localStorage.getItem('jewelry_products_v2');
-                        const parsed = saved ? JSON.parse(saved) : null;
-                        if (parsed && Array.isArray(parsed) && parsed.length > 0) {
-                            return parsed;
-                        }
-                    } catch (error) {
-                        console.warn('Failed to load products from localStorage:', error);
-                    }
-                    return initialProducts;
-                });
-                
-                const [productionData, setProductionData] = useState(() => {
-                    try {
-                        const saved = localStorage.getItem('jewelry_production_data_v2');
-                        return saved ? JSON.parse(saved) : {};
-                    } catch (error) {
-                        console.warn('Failed to load production data from localStorage:', error);
-                        return {};
-                    }
-                });
-                
-                const [searchTerm, setSearchTerm] = useState('');
-                const [filterCategory, setFilterCategory] = useState('all');
-                const [showAddModal, setShowAddModal] = useState(false);
-                const [editingProduct, setEditingProduct] = useState(null);
-                const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+                const [productionData, setProductionData] = useState({});
+                const [showModal, setShowModal] = useState(false);
                 const [notification, setNotification] = useState(null);
-                const [isLoading, setIsLoading] = useState(false);
-                const [autoSaveStatus, setAutoSaveStatus] = useState('saved');
-                const [lastSaved, setLastSaved] = useState(new Date());
                 const [formData, setFormData] = useState({ name: '', category: 'earring', material: '' });
 
-                // Hide loading screen after component mounts
-                useEffect(() => {
-                    console.log('Component mounted, hiding loading screen...');
-                    const timer = setTimeout(() => {
-                        const loadingScreen = document.getElementById('loading-screen');
-                        if (loadingScreen) {
-                            loadingScreen.classList.add('hidden');
-                        }
-                    }, 1000);
-                    return () => clearTimeout(timer);
-                }, []);
-
-                const showNotification = useCallback((message, type = 'success') => {
-                    setNotification({ message, type, id: Date.now() });
-                    setTimeout(() => setNotification(null), 4000);
-                }, []);
-
-                useEffect(() => {
-                    const timeoutId = setTimeout(() => {
-                        if (products.length > 0) {
-                            try {
-                                setAutoSaveStatus('saving');
-                                localStorage.setItem('jewelry_products_v2', JSON.stringify(products));
-                                localStorage.setItem('jewelry_production_data_v2', JSON.stringify(productionData));
-                                setLastSaved(new Date());
-                                setAutoSaveStatus('saved');
-                            } catch (error) {
-                                setAutoSaveStatus('error');
-                            }
-                        }
-                    }, 1000);
-                    return () => clearTimeout(timeoutId);
-                }, [products, productionData]);
-
-                const calculateProgress = useCallback((productId) => {
-                    const data = productionData[productId];
-                    if (!data) return 0;
-                    const completedCount = processes.reduce((count, process) => {
-                        return data.processes?.[process.id]?.completed ? count + 1 : count;
-                    }, 0);
-                    return Math.round((completedCount / processes.length) * 100);
-                }, [productionData, processes]);
-
-                const filteredProducts = useMemo(() => {
-                    return products.filter(product => {
-                        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                             product.id.toLowerCase().includes(searchTerm.toLowerCase());
-                        const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-                        return matchesSearch && matchesCategory;
-                    });
-                }, [products, searchTerm, filterCategory]);
-
-                const categories = useMemo(() => {
-                    return ['all', ...new Set(products.map(p => p.category))];
-                }, [products]);
-
-                const statistics = useMemo(() => {
-                    const totalProducts = products.length;
-                    const completedProducts = products.filter(p => calculateProgress(p.id) === 100).length;
-                    const inProgressProducts = totalProducts - completedProducts;
-                    const averageProgress = totalProducts > 0 ? Math.round(products.reduce((sum, p) => sum + calculateProgress(p.id), 0) / totalProducts) : 0;
-                    return { totalProducts, completedProducts, inProgressProducts, averageProgress };
-                }, [products, calculateProgress]);
-
-                const updateProcessStatus = useCallback((productId, processId, field, value) => {
+                const updateProcess = (productId, processId) => {
                     setProductionData(prev => ({
                         ...prev,
                         [productId]: {
                             ...prev[productId],
-                            processes: {
-                                ...prev[productId]?.processes,
-                                [processId]: {
-                                    ...prev[productId]?.processes?.[processId],
-                                    [field]: value,
-                                    lastUpdated: new Date().toISOString()
-                                }
-                            }
+                            [processId]: !prev[productId]?.[processId]
                         }
                     }));
-                    if (field === 'completed' && value) {
-                        const processName = processes.find(p => p.id === processId)?.fullName || processId;
-                        showNotification(`✅ ${processName} completed!`);
-                    }
-                }, [processes, showNotification]);
+                    setNotification('Process updated!');
+                    setTimeout(() => setNotification(null), 3000);
+                };
 
-                const addNewProduct = useCallback(() => {
+                const calculateProgress = (productId) => {
+                    const data = productionData[productId] || {};
+                    const completed = Object.values(data).filter(Boolean).length;
+                    return Math.round((completed / processes.length) * 100);
+                };
+
+                const addProduct = () => {
                     if (!formData.name.trim()) return;
                     const newProduct = {
-                        id: `PROD${String(Date.now()).slice(-5)}`,
+                        id: `P${String(Date.now()).slice(-3)}`,
                         name: formData.name.trim(),
                         category: formData.category,
-                        material: formData.material.trim() || 'Unknown',
-                        createdAt: new Date().toISOString()
+                        material: formData.material.trim() || 'Unknown'
                     };
                     setProducts(prev => [...prev, newProduct]);
                     setFormData({ name: '', category: 'earring', material: '' });
-                    setShowAddModal(false);
-                    showNotification(`🎉 Product "${newProduct.name}" added!`);
-                }, [formData, showNotification]);
-
-                const updateProduct = useCallback(() => {
-                    if (!formData.name.trim()) return;
-                    setProducts(prev => prev.map(p => 
-                        p.id === editingProduct ? { ...p, name: formData.name.trim(), category: formData.category, material: formData.material.trim() || 'Unknown' } : p
-                    ));
-                    setFormData({ name: '', category: 'earring', material: '' });
-                    setShowAddModal(false);
-                    setEditingProduct(null);
-                    showNotification('✅ Product updated!');
-                }, [formData, editingProduct, showNotification]);
-
-                const executeDeleteProduct = useCallback((productId) => {
-                    const product = products.find(p => p.id === productId);
-                    setProducts(prev => prev.filter(p => p.id !== productId));
-                    setProductionData(prev => {
-                        const newData = { ...prev };
-                        delete newData[productId];
-                        return newData;
-                    });
-                    setShowDeleteConfirm(null);
-                    showNotification(`🗑️ Product "${product?.name}" deleted.`);
-                }, [products, showNotification]);
-
-                const getProgressColor = (progress) => {
-                    if (progress === 100) return '#10b981';
-                    if (progress > 50) return '#fbbf24';
-                    if (progress > 0) return '#f87171';
-                    return '#e2e8f0';
+                    setShowModal(false);
+                    setNotification(`Product "${newProduct.name}" added!`);
+                    setTimeout(() => setNotification(null), 3000);
                 };
-                
-                console.log('Rendering JSX...');
-                
-                return React.createElement('div', { className: "min-h-screen p-4 fade-in" },
-                    React.createElement('div', { className: "max-w-7xl mx-auto" },
-                        notification && React.createElement('div', { 
-                            className: `notification fixed top-6 right-6 z-50 p-4 rounded-2xl shadow-2xl max-w-md ${notification.type === 'error' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 text-white'}` 
-                        },
-                            React.createElement('div', { className: "flex items-center gap-3" },
-                                React.createElement('span', { className: "text-2xl" }, notification.type === 'error' ? '⚠️' : '✅'),
-                                React.createElement('p', {}, notification.message)
-                            )
-                        ),
+
+                const statistics = useMemo(() => {
+                    const total = products.length;
+                    const completed = products.filter(p => calculateProgress(p.id) === 100).length;
+                    const inProgress = total - completed;
+                    const avgProgress = total > 0 ? Math.round(products.reduce((sum, p) => sum + calculateProgress(p.id), 0) / total) : 0;
+                    return { total, completed, inProgress, avgProgress };
+                }, [products, productionData]);
+
+                return (
+                    <div className="container">
+                        {notification && (
+                            <div className="notification">
+                                ✅ {notification}
+                            </div>
+                        )}
                         
-                        React.createElement('div', { className: "glass-card-strong rounded-3xl p-8 mb-8" },
-                            React.createElement('div', { className: "flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6" },
-                                React.createElement('div', { className: "flex items-center gap-4" },
-                                    React.createElement('div', { className: "w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-2xl micro-bounce" }, '💎'),
-                                    React.createElement('div', {},
-                                        React.createElement('h1', { className: "text-4xl font-bold text-white mb-2 gradient-text" }, 'Jewelry Production Tracker'),
-                                        React.createElement('p', { className: "text-white/80 text-lg" }, 'Modern Production Management System')
-                                    )
-                                ),
-                                React.createElement('div', { className: "flex items-center gap-3" },
-                                    React.createElement('div', { className: "relative" },
-                                        React.createElement('span', { className: "absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-2xl" }, '🔍'),
-                                        React.createElement('input', { 
-                                            type: "text", 
-                                            placeholder: "Search...", 
-                                            value: searchTerm, 
-                                            onChange: (e) => setSearchTerm(e.target.value), 
-                                            className: "modern-input pl-12 pr-4 py-3 rounded-xl" 
-                                        })
-                                    ),
-                                    React.createElement('div', { className: "relative" },
-                                        React.createElement('span', { className: "absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-2xl" }, '📂'),
-                                        React.createElement('select', { 
-                                            value: filterCategory, 
-                                            onChange: (e) => setFilterCategory(e.target.value), 
-                                            className: "modern-input pl-12 pr-10 py-3 rounded-xl appearance-none"
-                                        },
-                                            categories.map(cat => 
-                                                React.createElement('option', { key: cat, value: cat },
-                                                    cat === 'all' ? 'All Categories' : cat
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                        ),
+                        <div className="glass-card">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{ fontSize: '2.5rem' }}>💎</div>
+                                <div>
+                                    <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                                        Jewelry Production Tracker
+                                    </h1>
+                                    <p style={{ fontSize: '1.2rem', opacity: '0.8' }}>
+                                        Modern Production Management System
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                         
-                        React.createElement('div', { className: "mb-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6" },
-                            React.createElement('div', { className: "stat-card rounded-2xl p-6 scale-hover" },
-                                React.createElement('div', { className: "flex items-center justify-between mb-2" },
-                                    React.createElement('p', { className: "text-white/80 font-medium" }, 'Total Products'),
-                                    React.createElement('span', { className: "text-2xl text-white/50" }, '👥')
-                                ),
-                                React.createElement('p', { className: "text-3xl font-bold text-white" }, statistics.totalProducts)
-                            ),
-                            React.createElement('div', { className: "stat-card rounded-2xl p-6 scale-hover" },
-                                React.createElement('div', { className: "flex items-center justify-between mb-2" },
-                                    React.createElement('p', { className: "text-white/80 font-medium" }, 'Completed'),
-                                    React.createElement('span', { className: "text-2xl text-white/50" }, '✅')
-                                ),
-                                React.createElement('p', { className: "text-3xl font-bold text-white" }, statistics.completedProducts)
-                            ),
-                            React.createElement('div', { className: "stat-card rounded-2xl p-6 scale-hover" },
-                                React.createElement('div', { className: "flex items-center justify-between mb-2" },
-                                    React.createElement('p', { className: "text-white/80 font-medium" }, 'In Progress'),
-                                    React.createElement('span', { className: "text-2xl text-white/50" }, '⏰')
-                                ),
-                                React.createElement('p', { className: "text-3xl font-bold text-white" }, statistics.inProgressProducts)
-                            ),
-                            React.createElement('div', { className: "stat-card rounded-2xl p-6 scale-hover" },
-                                React.createElement('div', { className: "flex items-center justify-between mb-2" },
-                                    React.createElement('p', { className: "text-white/80 font-medium" }, 'Avg. Progress'),
-                                    React.createElement('span', { className: "text-2xl text-white/50" }, '📈')
-                                ),
-                                React.createElement('p', { className: "text-3xl font-bold text-white" }, `${statistics.averageProgress}%`)
-                            )
-                        ),
-                        
-                        React.createElement('div', { className: "glass-card rounded-2xl overflow-hidden" },
-                            React.createElement('div', { className: "overflow-x-auto" },
-                                React.createElement('table', { className: "w-full text-white" },
-                                    React.createElement('thead', {},
-                                        React.createElement('tr', { className: "bg-white/10" },
-                                            React.createElement('th', { className: "p-4 text-left" }, 'Product'),
-                                            React.createElement('th', { className: "p-4 text-left" }, 'Progress'),
-                                            ...processes.map(process => 
-                                                React.createElement('th', { key: process.id, className: "p-4 text-center" },
-                                                    React.createElement('div', { className: "flex flex-col items-center gap-1" },
-                                                        React.createElement('span', { className: "text-2xl" }, process.icon),
-                                                        React.createElement('span', { className: "text-xs whitespace-pre-line text-center" }, process.name)
-                                                    )
-                                                )
-                                            ),
-                                            React.createElement('th', { className: "p-4" }, 'Actions')
-                                        )
-                                    ),
-                                    React.createElement('tbody', {},
-                                        filteredProducts.map(product => {
-                                            const progress = calculateProgress(product.id);
-                                            const data = productionData[product.id];
-                                            return React.createElement('tr', { key: product.id, className: "border-b border-white/10 hover:bg-white/5" },
-                                                React.createElement('td', { className: "p-4" },
-                                                    React.createElement('div', {},
-                                                        React.createElement('div', { className: "font-bold" }, product.name),
-                                                        React.createElement('div', { className: "text-sm text-white/70" }, product.material)
-                                                    )
-                                                ),
-                                                React.createElement('td', { className: "p-4" },
-                                                    React.createElement('div', { className: "flex items-center gap-3" },
-                                                        React.createElement('div', { className: "w-full bg-white/10 rounded-full h-2.5" },
-                                                            React.createElement('div', { 
-                                                                className: "h-2.5 rounded-full", 
-                                                                style: { 
-                                                                    width: `${progress}%`, 
-                                                                    background: getProgressColor(progress) 
-                                                                }
-                                                            })
-                                                        ),
-                                                        React.createElement('span', { className: "font-medium" }, `${progress}%`)
-                                                    )
-                                                ),
-                                                ...processes.map(process => 
-                                                    React.createElement('td', { key: process.id, className: "p-4 text-center" },
-                                                        React.createElement('button', { 
-                                                            onClick: () => updateProcessStatus(product.id, process.id, 'completed', !data?.processes?.[process.id]?.completed), 
-                                                            className: `w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all ${
-                                                                data?.processes?.[process.id]?.completed ? 'bg-green-500' : 'bg-white/20 hover:bg-white/30'
-                                                            }`
-                                                        },
-                                                            React.createElement('span', { className: "text-2xl" },
-                                                                data?.processes?.[process.id]?.completed ? '✅' : '⚪'
-                                                            )
-                                                        )
-                                                    )
-                                                ),
-                                                React.createElement('td', { className: "p-4" },
-                                                    React.createElement('div', { className: "flex gap-2 justify-center" },
-                                                        React.createElement('button', { 
-                                                            onClick: () => { 
-                                                                setEditingProduct(product.id); 
-                                                                setFormData({ 
-                                                                    name: product.name, 
-                                                                    category: product.category, 
-                                                                    material: product.material 
-                                                                }); 
-                                                                setShowAddModal(true); 
-                                                            }, 
-                                                            className: "p-2 rounded-full hover:bg-white/20"
-                                                        },
-                                                            React.createElement('span', { className: "text-2xl" }, '✏️')
-                                                        ),
-                                                        React.createElement('button', { 
-                                                            onClick: () => setShowDeleteConfirm(product.id), 
-                                                            className: "p-2 rounded-full hover:bg-white/20"
-                                                        },
-                                                            React.createElement('span', { className: "text-2xl" }, '🗑️')
-                                                        )
-                                                    )
-                                                )
-                                            );
-                                        })
-                                    )
-                                )
-                            )
-                        ),
-                        
-                        filteredProducts.length === 0 && React.createElement('div', { className: "text-center py-12 text-white/80" },
-                            'No products found. Try adjusting your search or filter.'
-                        ),
-                        
-                        React.createElement('button', { 
-                            onClick: () => { 
-                                setEditingProduct(null); 
-                                setFormData({ name: '', category: 'earring', material: '' }); 
-                                setShowAddModal(true); 
-                            }, 
-                            className: "floating-button"
-                        },
-                            React.createElement('span', { className: "text-2xl text-white" }, '➕')
-                        ),
-                        
-                        (showAddModal || showDeleteConfirm) && React.createElement('div', { className: "fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center z-50 p-4" },
-                            showAddModal && React.createElement('div', { className: "glass-card-strong rounded-2xl p-8 w-full max-w-md modal-content" },
-                                React.createElement('h2', { className: "text-2xl font-bold text-white mb-6" },
-                                    editingProduct ? 'Edit Product' : 'Add New Product'
-                                ),
-                                React.createElement('div', { className: "space-y-4" },
-                                    React.createElement('input', { 
-                                        type: "text", 
-                                        placeholder: "Product Name", 
-                                        value: formData.name, 
-                                        onChange: (e) => setFormData(p => ({ ...p, name: e.target.value })), 
-                                        className: "modern-input w-full px-4 py-3 rounded-xl" 
-                                    }),
-                                    React.createElement('select', { 
-                                        value: formData.category, 
-                                        onChange: (e) => setFormData(p => ({ ...p, category: e.target.value })), 
-                                        className: "modern-input w-full px-4 py-3 rounded-xl"
-                                    },
-                                        React.createElement('option', { value: "earring" }, 'Earring'),
-                                        React.createElement('option', { value: "necklace" }, 'Necklace'),
-                                        React.createElement('option', { value: "bracelet" }, 'Bracelet'),
-                                        React.createElement('option', { value: "ring" }, 'Ring')
-                                    ),
-                                    React.createElement('input', { 
-                                        type: "text", 
-                                        placeholder: "Material", 
-                                        value: formData.material, 
-                                        onChange: (e) => setFormData(p => ({ ...p, material: e.target.value })), 
-                                        className: "modern-input w-full px-4 py-3 rounded-xl" 
-                                    })
-                                ),
-                                React.createElement('div', { className: "flex gap-4 mt-8" },
-                                    React.createElement('button', { 
-                                        onClick: () => setShowAddModal(false), 
-                                        className: "flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium"
-                                    }, 'Cancel'),
-                                    React.createElement('button', { 
-                                        onClick: editingProduct ? updateProduct : addNewProduct, 
-                                        className: "flex-1 gradient-button px-6 py-3 text-white rounded-xl font-medium"
-                                    }, editingProduct ? 'Update' : 'Add')
-                                )
-                            ),
+                        <div className="stat-grid">
+                            <div className="stat-card">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <span>Total Products</span>
+                                    <span style={{ fontSize: '1.5rem' }}>👥</span>
+                                </div>
+                                <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{statistics.total}</div>
+                            </div>
                             
-                            showDeleteConfirm && React.createElement('div', { className: "glass-card-strong rounded-2xl p-8 w-full max-w-md modal-content text-center" },
-                                React.createElement('div', { className: "w-16 h-16 bg-red-500/50 rounded-full flex items-center justify-center mx-auto mb-6" },
-                                    React.createElement('span', { className: "text-2xl text-white" }, '🗑️')
-                                ),
-                                React.createElement('h2', { className: "text-2xl font-bold text-white mb-4" }, 'Delete Product?'),
-                                React.createElement('p', { className: "text-white/80" },
-                                    `Are you sure you want to delete "${products.find(p => p.id === showDeleteConfirm)?.name}"? This cannot be undone.`
-                                ),
-                                React.createElement('div', { className: "flex gap-4 mt-8" },
-                                    React.createElement('button', { 
-                                        onClick: () => setShowDeleteConfirm(null), 
-                                        className: "flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium"
-                                    }, 'Cancel'),
-                                    React.createElement('button', { 
-                                        onClick: () => executeDeleteProduct(showDeleteConfirm), 
-                                        className: "flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium"
-                                    }, 'Delete')
-                                )
-                            )
-                        )
-                    )
+                            <div className="stat-card">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <span>Completed</span>
+                                    <span style={{ fontSize: '1.5rem' }}>✅</span>
+                                </div>
+                                <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{statistics.completed}</div>
+                            </div>
+                            
+                            <div className="stat-card">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <span>In Progress</span>
+                                    <span style={{ fontSize: '1.5rem' }}>⏰</span>
+                                </div>
+                                <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{statistics.inProgress}</div>
+                            </div>
+                            
+                            <div className="stat-card">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <span>Avg. Progress</span>
+                                    <span style={{ fontSize: '1.5rem' }}>📈</span>
+                                </div>
+                                <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{statistics.avgProgress}%</div>
+                            </div>
+                        </div>
+                        
+                        <div className="glass-card">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Progress</th>
+                                        {processes.map(process => (
+                                            <th key={process.id} style={{ textAlign: 'center' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                                                    <span style={{ fontSize: '1.5rem' }}>{process.icon}</span>
+                                                    <span style={{ fontSize: '0.8rem' }}>{process.name}</span>
+                                                </div>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {products.map(product => {
+                                        const progress = calculateProgress(product.id);
+                                        return (
+                                            <tr key={product.id}>
+                                                <td>
+                                                    <div>
+                                                        <div style={{ fontWeight: 'bold' }}>{product.name}</div>
+                                                        <div style={{ fontSize: '0.9rem', opacity: '0.7' }}>{product.material}</div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                        <div style={{ 
+                                                            width: '100px', 
+                                                            height: '8px', 
+                                                            background: 'rgba(255,255,255,0.2)', 
+                                                            borderRadius: '4px',
+                                                            overflow: 'hidden'
+                                                        }}>
+                                                            <div style={{ 
+                                                                width: `${progress}%`, 
+                                                                height: '100%', 
+                                                                background: progress === 100 ? '#10b981' : progress > 50 ? '#fbbf24' : '#f87171',
+                                                                borderRadius: '4px'
+                                                            }}></div>
+                                                        </div>
+                                                        <span style={{ fontWeight: '600' }}>{progress}%</span>
+                                                    </div>
+                                                </td>
+                                                {processes.map(process => (
+                                                    <td key={process.id} style={{ textAlign: 'center' }}>
+                                                        <button 
+                                                            onClick={() => updateProcess(product.id, process.id)}
+                                                            className={`process-btn ${productionData[product.id]?.[process.id] ? 'completed' : 'incomplete'}`}
+                                                        >
+                                                            {productionData[product.id]?.[process.id] ? '✅' : '⚪'}
+                                                        </button>
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <button 
+                            onClick={() => setShowModal(true)}
+                            className="floating-btn"
+                        >
+                            ➕
+                        </button>
+                        
+                        {showModal && (
+                            <div className="modal" onClick={() => setShowModal(false)}>
+                                <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>
+                                        Add New Product
+                                    </h2>
+                                    
+                                    <input 
+                                        type="text"
+                                        placeholder="Product Name"
+                                        value={formData.name}
+                                        onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                        className="input"
+                                    />
+                                    
+                                    <select 
+                                        value={formData.category}
+                                        onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                                        className="input"
+                                    >
+                                        <option value="earring">Earring</option>
+                                        <option value="necklace">Necklace</option>
+                                        <option value="bracelet">Bracelet</option>
+                                        <option value="ring">Ring</option>
+                                    </select>
+                                    
+                                    <input 
+                                        type="text"
+                                        placeholder="Material"
+                                        value={formData.material}
+                                        onChange={e => setFormData(prev => ({ ...prev, material: e.target.value }))}
+                                        className="input"
+                                    />
+                                    
+                                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                        <button 
+                                            onClick={() => setShowModal(false)}
+                                            style={{ 
+                                                flex: 1, 
+                                                padding: '0.75rem', 
+                                                background: 'rgba(255,255,255,0.1)', 
+                                                border: 'none', 
+                                                borderRadius: '0.75rem', 
+                                                color: 'white',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            onClick={addProduct}
+                                            className="gradient-button"
+                                            style={{ flex: 1 }}
+                                        >
+                                            Add Product
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 );
             };
 
-            console.log('About to render component...');
-            try {
-                const root = ReactDOM.createRoot(document.getElementById('root'));
-                root.render(React.createElement(JewelryProductionTracker));
-                console.log('Component rendered successfully!');
-            } catch (error) {
-                console.error('Error rendering component:', error);
-                document.getElementById('root').innerHTML = `
-                    <div style="padding: 2rem; text-align: center; color: white;">
-                        <h1>❌ 렌더링 오류</h1>
-                        <p>앱을 로드하는 중 오류가 발생했습니다.</p>
-                        <p>오류: ${error.message}</p>
-                    </div>
-                `;
-            }
+            // 렌더링
+            console.log('Rendering app...');
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(React.createElement(JewelryTracker));
+            console.log('App rendered successfully!');
         }
     </script>
 </body>
